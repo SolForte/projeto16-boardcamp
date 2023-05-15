@@ -117,8 +117,7 @@ export async function returnRentals(req, res) {
     }
 
     const { pricePerDay, rentDate, returnDate } = rental;
-    const returnDateSync = new Date (dayjs().format("YYYY-MM-DD"));
-    const rentDateSync = new Date(rentDate);
+    const returnDateSync = dayjs().format("YYYY-MM-DD");
 
     // If rental has already been returned, return 400
     if (returnDate !== null) {
@@ -126,8 +125,8 @@ export async function returnRentals(req, res) {
       return;
     }
 
-    const daysOverdue = (returnDateSync - rentDateSync) / (1000 * 60 * 60 * 24);
-    const delayFee = daysOverdue > 0 ? daysOverdue * pricePerDay : null;
+		const delayDays = (new Date(returnDateSync) - new Date(rentDate)) / (1000 * 60 * 60 * 24);
+		const delayFee = delayDays * pricePerDay;
 
     await db.query(
       'UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3;',
