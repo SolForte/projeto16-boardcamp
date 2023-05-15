@@ -10,4 +10,6 @@ app.use(express.json());
 app.use(cors());
 app.use(routers);
 
-app.listen(process.env.PORT, () => console.log(`Running server on port ${process.env.PORT}.`));
+app.listen(process.env.PORT, () =>
+  console.log(`Running server on port ${process.env.PORT}.`)
+);
