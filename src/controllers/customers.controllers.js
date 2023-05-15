@@ -5,14 +5,14 @@ export async function getCustomers(_req, res) {
   try {
     const customers = await db.query(`SELECT * FROM customers`);
     const customersRows = customers.rows.map(
-      ({id,name,phone,cpf,birthday}) => ({
+      ({ id, name, phone, cpf, birthday }) => ({
         id,
         name,
         phone,
         cpf,
-        birthday: dayjs(birthday).format( 'YYYY-MM-DD' ),
+        birthday: dayjs(birthday).format("YYYY-MM-DD"),
       })
-    )
+    );
     res.status(200).send(customersRows);
     return;
   } catch (error) {
@@ -57,7 +57,12 @@ export async function getCustomersById(req, res) {
       return;
     }
 
-    res.status(200).send({...customers.rows[0], birthday : dayjs( customers.rows[0].birthday ).format( 'YYYY-MM-DD' )});
+    res
+      .status(200)
+      .send({
+        ...customers.rows[0],
+        birthday: dayjs(customers.rows[0].birthday).format("YYYY-MM-DD"),
+      });
     return;
   } catch (error) {
     res.status(500).send(error.message);
@@ -69,12 +74,18 @@ export async function updateCustomers(req, res) {
   const { id } = req.params;
   const { name, phone, cpf, birthday } = req.body;
   try {
-    const cpfConflict = await db.query(`SELECT * FROM customers WHERE cpf=$1 AND NOT id=$2`, [cpf, id]);
+    const cpfConflict = await db.query(
+      `SELECT * FROM customers WHERE cpf=$1 AND NOT id=$2`,
+      [cpf, id]
+    );
     if (cpfConflict.rows.length > 0) {
       res.sendStatus(409);
       return;
     }
-    await db.query(`UPDATE customers SET name=$1, phone=$2, cpf=$3, birthday=$4 WHERE id=$5`, [name, phone, cpf, birthday, id]);
+    await db.query(
+      `UPDATE customers SET name=$1, phone=$2, cpf=$3, birthday=$4 WHERE id=$5`,
+      [name, phone, cpf, birthday, id]
+    );
     res.sendStatus(200);
     return;
   } catch (error) {
