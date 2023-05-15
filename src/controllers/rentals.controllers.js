@@ -1,6 +1,5 @@
 import { db } from "../database/database.js";
 import dayjs from "dayjs";
-import { differenceInDays } from "date-fns";
 
 const DATE_FORMAT = "YYYY-MM-DD";
 
@@ -120,7 +119,7 @@ export async function returnRentals(req, res) {
     const { pricePerDay, rentDate, returnDate } = rental;
     const returnDateSync = new Date (dayjs().format("YYYY-MM-DD"));
     const rentDateSync = new Date(rentDate);
-    
+
     // If rental has already been returned, return 400
     if (returnDate !== null) {
       res.sendStatus(400);
