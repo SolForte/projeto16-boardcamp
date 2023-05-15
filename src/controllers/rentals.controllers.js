@@ -1,13 +1,42 @@
 import { db } from "../database/database.js";
+import dayjs from "dayjs";
 
 export async function getRentals(_req, res) {
   try {
-    const rentals = await db.query(`SELECT * FROM rentals`);
-    res.status(200).send(rentals.rows);
-    return;
+    const rentalsQuery = `
+      SELECT
+        rentals.id,
+        rentals."customerId",
+        rentals."gameId",
+        rentals."rentDate",
+        rentals."daysRented",
+        rentals."returnDate",
+        rentals."originalPrice",
+        rentals."delayFee",
+        customers.name AS "customerName",
+        games.name AS "gameName"
+      FROM rentals
+      JOIN customers ON customers.id = rentals."customerId"
+      JOIN games ON games.id = rentals."gameId"
+    `;
+    const rentalsResult = await db.query(rentalsQuery);
+    const rentals = rentalsResult?.rows.map((rental) => ({
+      id: rental.id,
+      customerId: rental.customerId,
+      gameId: rental.gameId,
+      rentDate: dayjs(rental.rentDate).format("YYYY-MM-DD"),
+      daysRented: rental.daysRented,
+      returnDate: rental.returnDate
+        ? dayjs(rental.returnDate).format("YYYY-MM-DD")
+        : null,
+      originalPrice: rental.originalPrice,
+      delayFee: rental.delayFee,
+      customer: { id: rental.customerId, name: rental.customerName },
+      game: { id: rental.gameId, name: rental.gameName },
+    }));
+    res.status(200).send(rentals);
   } catch (error) {
     res.status(500).send(error.message);
-    return;
   }
 }
 
@@ -31,7 +60,7 @@ export async function postRentals(req, res) {
     if (
       gameQuery.rowCount === 0 ||
       customerQuery.rowCount === 0 ||
-      stockTotal - rentalsQuery.rows[0].count
+      rentalsQuery.rows[0].count >= stockTotal
     ) {
       res.sendStatus(400);
       return;
