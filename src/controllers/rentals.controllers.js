@@ -2,7 +2,7 @@ import { db } from "../database/database.js";
 import dayjs from "dayjs";
 
 const DATE_FORMAT = "YYYY-MM-DD";
-const DAY_LITERAL = "day";
+const DAY_STRING_LITERAL = "day";
 
 export async function getRentals(_req, res) {
   try {
@@ -125,7 +125,7 @@ export async function returnRentals(req, res) {
       return;
     }
 
-    const daysDifference = dayjs().diff(rentDate, DAY_LITERAL);
+    const daysDifference = dayjs().diff(rentDate, DAY_STRING_LITERAL);
 
     let delayFee = null;
     if (daysDifference > daysRented) {
