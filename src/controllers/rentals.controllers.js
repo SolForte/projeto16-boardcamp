@@ -116,7 +116,7 @@ export async function returnRentals(req, res) {
     const returnDateSync = new Date();
     let delayFee = null;
 
-    if (!rental) {
+    if (!rental || rental.rowCount === 0) {
       res.sendStatus(404);
       return;
     }
