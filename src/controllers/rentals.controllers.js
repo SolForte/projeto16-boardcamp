@@ -2,6 +2,8 @@ import { db } from "../database/database.js";
 import dayjs from "dayjs";
 import { differenceInDays } from "date-fns";
 
+const DATE_FORMAT = "YYYY-MM-DD";
+
 export async function getRentals(_req, res) {
   try {
     const rentalsQuery = `
@@ -25,10 +27,10 @@ export async function getRentals(_req, res) {
       id: rental.id,
       customerId: rental.customerId,
       gameId: rental.gameId,
-      rentDate: dayjs(rental.rentDate).format("YYYY-MM-DD"),
+      rentDate: dayjs(rental.rentDate).format(DATE_FORMAT),
       daysRented: rental.daysRented,
       returnDate: rental.returnDate
-        ? dayjs(rental.returnDate).format("YYYY-MM-DD")
+        ? dayjs(rental.returnDate).format(DATE_FORMAT)
         : null,
       originalPrice: rental.originalPrice,
       delayFee: rental.delayFee,
@@ -81,7 +83,7 @@ export async function postRentals(req, res) {
       [
         customerId,
         gameId,
-        dayjs().format("YYYY-MM-DD"),
+        dayjs().format(DATE_FORMAT),
         daysRented,
         null,
         pricePerDay * daysRented,
@@ -154,14 +156,14 @@ export async function deleteRentals(req, res) {
 
     if (rental.rowCount === 0) {
       res.sendStatus(404);
-      return
+      return;
     }
 
     const { returnDate } = rental.rows[0];
 
-    if (returnDate === null){
+    if (returnDate === null) {
       res.sendStatus(400);
-      return
+      return;
     }
 
     await db.query(`DELETE FROM rentals WHERE id=$1`, [id]);
