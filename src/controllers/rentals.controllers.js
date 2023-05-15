@@ -111,15 +111,16 @@ export async function returnRentals(req, res) {
     );
 
     const rental = rentalData.rows[0];
-    const { pricePerDay, rentDate, returnDate } = rental;
-    const returnDateSync = new Date (dayjs().format("YYYY-MM-DD"));
-    const rentDateSync = new Date(rentDate);
 
     if (!rental || rental.rowCount === 0) {
       res.sendStatus(404);
       return;
     }
 
+    const { pricePerDay, rentDate, returnDate } = rental;
+    const returnDateSync = new Date (dayjs().format("YYYY-MM-DD"));
+    const rentDateSync = new Date(rentDate);
+    
     // If rental has already been returned, return 400
     if (returnDate !== null) {
       res.sendStatus(400);
