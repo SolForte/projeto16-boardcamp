@@ -146,3 +146,7 @@ export async function returnRentals(req, res) {
     res.status(500).send(error.message);
   }
 }
+
+export async function deleteRentals(req, res) {
+  
+}
