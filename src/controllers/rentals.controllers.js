@@ -1,5 +1,6 @@
 import { db } from "../database/database.js";
 import dayjs from "dayjs";
+import { differenceInDays } from "date-fns";
 
 export async function getRentals(_req, res) {
   try {
@@ -93,5 +94,55 @@ export async function postRentals(req, res) {
   } catch (error) {
     res.status(500).send(error.message);
     return;
+  }
+}
+
+export async function returnRentals(req, res) {
+  try {
+    const rentalId = req.params.id;
+    const rentalData = await db.query(
+      `SELECT rentals.*, games."pricePerDay"
+       FROM rentals
+       JOIN games ON rentals."gameId" = games.id 
+       WHERE rentals.id = $1`,
+      [rentalId]
+    );
+
+    const rental = rentalData.rows[0];
+    const { pricePerDay, rentedDays, rentDate, returnDate } = rental;
+    const rentDateSync = new Date(rentDate);
+    const returnDateSync = new Date();
+    let delayFee = null;
+
+    if (!rental) {
+      res.sendStatus(404);
+      return;
+    }
+
+    // If rental has already been returned, return 400
+    if (returnDate !== null) {
+      res.sendStatus(400);
+      return;
+    }
+
+    // If return date is after rent date, calculate delay fee
+    if (returnDateSync.getTime() > rentDateSync.getTime()) {
+      const daysOverdue = differenceInDays(returnDateSync, rentDateSync);
+
+      // If rental is overdue, calculate delay fee
+      if (daysOverdue > rentedDays) {
+        delayFee = (daysOverdue - rentedDays) * pricePerDay;
+      }
+    }
+
+    // Update rental with return date and delay fee
+    await db.query(
+      'UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3;',
+      [returnDateSync, delayFee, rentalId]
+    );
+
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(500).send(error.message);
   }
 }
