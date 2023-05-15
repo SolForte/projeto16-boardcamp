@@ -34,3 +34,23 @@ export async function postCustomers(req, res) {
     return;
   }
 }
+
+export async function getCustomersById(req, res) {
+  const { id } = req.params;
+  try {
+    const customers = await db.query(`SELECT * FROM customers WHERE id=$1`, [
+      id,
+    ]);
+
+    if (customers.rowCount === 0) {
+      res.sendStatus(404);
+      return;
+    }
+
+    res.status(200).send(customers.rows[0]);
+    return;
+  } catch (error) {
+    res.status(500).send(error.message);
+    return;
+  }
+}
