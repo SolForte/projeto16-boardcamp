@@ -1,9 +1,19 @@
 import { db } from "../database/database.js";
+import dayjs from "dayjs";
 
 export async function getCustomers(_req, res) {
   try {
     const customers = await db.query(`SELECT * FROM customers`);
-    res.status(200).send(customers.rows);
+    const customersRows = customers.rows.map(
+      ({id,name,phone,cpf,birthday}) => ({
+        id,
+        name,
+        phone,
+        cpf,
+        birthday: dayjs(birthday).format( 'YYYY-MM-DD' ),
+      })
+    )
+    res.status(200).send(customersRows);
     return;
   } catch (error) {
     res.status(500).send(error.message);
@@ -47,7 +57,7 @@ export async function getCustomersById(req, res) {
       return;
     }
 
-    res.status(200).send(customers.rows[0]);
+    res.status(200).send({...customers.rows[0], birthday : dayjs( customers.rows[0].birthday ).format( 'YYYY-MM-DD' )});
     return;
   } catch (error) {
     res.status(500).send(error.message);
