@@ -2,6 +2,7 @@ import { db } from "../database/database.js";
 import dayjs from "dayjs";
 
 const DATE_FORMAT = "YYYY-MM-DD";
+const DAY_LITERAL = "day";
 
 export async function getRentals(_req, res) {
   try {
@@ -116,8 +117,7 @@ export async function returnRentals(req, res) {
       return;
     }
 
-    const { pricePerDay, rentDate, returnDate } = rental;
-    const returnDateSync = dayjs().format("YYYY-MM-DD");
+    const { rentDate, daysRented, returnDate, pricePerDay } = rental;
 
     // If rental has already been returned, return 400
     if (returnDate !== null) {
@@ -125,12 +125,19 @@ export async function returnRentals(req, res) {
       return;
     }
 
-		const delayDays = (new Date(returnDateSync) - new Date(rentDate)) / (1000 * 60 * 60 * 24);
-		const delayFee = delayDays * pricePerDay;
+    const daysDifference = dayjs().diff(rentDate, DAY_LITERAL);
+
+    let delayFee = null;
+    if (daysDifference > daysRented) {
+      const daysDue = daysDifference - daysRented;
+      delayFee = daysDue * pricePerDay;
+    } else {
+      delayFee = 0;
+    }
 
     await db.query(
-      'UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3;',
-      [returnDateSync, delayFee, rentalId]
+      'UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3 AND "returnDate" IS NULL;',
+      [dayjs().format(DATE_FORMAT), delayFee, rentalId]
     );
 
     res.sendStatus(200);

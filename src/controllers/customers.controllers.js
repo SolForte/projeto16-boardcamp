@@ -57,12 +57,10 @@ export async function getCustomersById(req, res) {
       return;
     }
 
-    res
-      .status(200)
-      .send({
-        ...customers.rows[0],
-        birthday: dayjs(customers.rows[0].birthday).format("YYYY-MM-DD"),
-      });
+    res.status(200).send({
+      ...customers.rows[0],
+      birthday: dayjs(customers.rows[0].birthday).format("YYYY-MM-DD"),
+    });
     return;
   } catch (error) {
     res.status(500).send(error.message);
